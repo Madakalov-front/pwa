@@ -1,3 +1,4 @@
+// vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { VitePWA, type ManifestOptions } from "vite-plugin-pwa";
@@ -43,7 +44,6 @@ const manifest: false | Partial<ManifestOptions> = {
   scope: "/",
 };
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -51,14 +51,16 @@ export default defineConfig({
     VitePWA({
       injectRegister: "auto",
       registerType: "autoUpdate",
+      manifest,
       workbox: {
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: [
-          "**/*.{html,css,js,svg,png,ico,webp,jpg,jpeg}",
+          "**/*.{html,css,js,svg,png,ico,webp,jpg,jpeg,woff2}",
           "screenshots/*.webp",
           "icon512_*.png",
         ],
         globIgnores: ["**/node_modules/**"],
+
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === "navigate",
@@ -69,9 +71,6 @@ export default defineConfig({
               expiration: {
                 maxEntries: 10,
                 maxAgeSeconds: 7 * 24 * 60 * 60,
-              },
-              cacheableResponse: {
-                statuses: [200],
               },
             },
           },
@@ -89,35 +88,79 @@ export default defineConfig({
           },
 
           {
-            urlPattern: /^https:\/\/rickandmortyapi\.com\/api\/.*/,
-            handler: "NetworkFirst", 
+            urlPattern: /^https:\/\/rickandmortyapi\.com\/api\/character/,
+            handler: "NetworkFirst",
             options: {
-              cacheName: "rickandmorty-api",
-              networkTimeoutSeconds: 3,
+              cacheName: "rm-characters",
+              networkTimeoutSeconds: 5,
               expiration: {
-                maxEntries: 100, 
-                maxAgeSeconds: 7 * 24 * 60 * 60, 
+                maxEntries: 200,
+                maxAgeSeconds: 7 * 24 * 60 * 60,
               },
               cacheableResponse: {
-                statuses: [0, 200], 
+                statuses: [0, 200],
               },
             },
           },
 
-          
           {
-            urlPattern: /\/api\/.*/,
+            urlPattern: /^https:\/\/rickandmortyapi\.com\/api\/location/,
             handler: "NetworkFirst",
             options: {
-              cacheName: "api-data",
-              networkTimeoutSeconds: 3,
+              cacheName: "rm-locations",
+              networkTimeoutSeconds: 5,
               expiration: {
-                maxEntries: 30,
-                maxAgeSeconds: 24 * 60 * 60,
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
               },
             },
+          },
+
+          {
+            urlPattern: /^https:\/\/rickandmortyapi\.com\/api\/episode/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "rm-episodes",
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
             },
-          
+          },
+
+          {
+            urlPattern: /^https:\/\/rickandmortyapi\.com\/api\/.*/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "rm-api-general",
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 7 * 24 * 60 * 60,
+              },
+            },
+          },
+
+          {
+            urlPattern:
+              /https:\/\/rickandmortyapi\.com\/api\/character\/avatar\/.*\.jpeg/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "rm-avatars",
+              expiration: {
+                maxEntries: 300,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+
           {
             urlPattern: /\.(?:png|jpg|jpeg|webp|svg|gif)$/,
             handler: "CacheFirst",
@@ -137,19 +180,7 @@ export default defineConfig({
               cacheName: "screenshots",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 365 * 24 * 60 * 60, // на год
-              },
-            },
-          },
-
-          {
-            urlPattern: /\.(?:woff|woff2|ttf|eot)$/,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "fonts-cache",
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 24 * 60 * 60,
+                maxAgeSeconds: 365 * 24 * 60 * 60,
               },
             },
           },
@@ -158,12 +189,12 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         ignoreURLParametersMatching: [/^utm_/, /^fbclid$/],
       },
+
       devOptions: {
         enabled: true,
         type: "module",
         suppressWarnings: true,
       },
-      manifest,
     }),
   ],
 });
