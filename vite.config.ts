@@ -50,7 +50,10 @@ export default defineConfig({
     VitePWA({
       injectRegister: "auto",
       registerType: "autoUpdate",
-      workbox: { globPatterns: ["**/*.{html,css,js,svg,png,ico}"] },
+      workbox: {
+        globPatterns: ["**/*.{html,css,js,svg,png,ico}"],
+        maximumFileSizeToCacheInBytes: 3000000,
+      },
       manifest,
     }),
   ],
