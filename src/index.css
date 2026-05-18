@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@tailwind utilities;
+
+@layer components {
+  .nav {
+    @apply w-full mb-5;
+  }
+
+  .nav-list {
+    @apply flex items-center justify-center gap-2 py-4 px-5 text-2xl uppercase font-semibold;
+  }
+
+  .nav-item {
+    @apply transition-colors duration-200 hover:text-blue-400;
+  }
+
+  .active {
+    @apply text-blue-500;
+  }
+}

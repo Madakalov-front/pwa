@@ -1,0 +1,1 @@
+export type DetailRoutePage = string | number;

@@ -1,0 +1,1 @@
+export { fetchEpisodeDetail } from "./fetchEpisodeDetail";
