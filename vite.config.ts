@@ -38,8 +38,9 @@ const manifest: false | Partial<ManifestOptions> = {
   display: "standalone",
   lang: "ru-RU",
   short_name: "Rick and Morty",
-  start_url: "/",
-  name: "rick_and_morty",
+  start_url: "/?source=pwa",
+  name: "Rick and Morty PWA",
+  scope: "/",
 };
 
 // https://vite.dev/config/
@@ -51,8 +52,64 @@ export default defineConfig({
       injectRegister: "auto",
       registerType: "autoUpdate",
       workbox: {
-        globPatterns: ["**/*.{html,css,js,svg,png,ico}"],
-        maximumFileSizeToCacheInBytes: 3000000,
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globPatterns: ["**/*.{html,css,js,svg,png,ico,webp,jpg,jpeg}"],
+        globIgnores: ["**/node_modules/**", "**/screenshots/*.webp"],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "html-cache",
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 7 * 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            urlPattern: /\.(?:js|css)$/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "static-assets",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            urlPattern: /\/api\/.*/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-data",
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 30,
+                maxAgeSeconds: 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/.*/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "cdn-images",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+        ],
+        cleanupOutdatedCaches: true,
+        ignoreURLParametersMatching: [/^utm_/, /^fbclid$/],
+      },
+      devOptions: {
+        enabled: true,
+        type: "module",
+        suppressWarnings: true,
       },
       manifest,
     }),
